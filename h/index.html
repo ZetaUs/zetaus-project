@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello Page</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 第一界面：下拉框与 Next 按钮同行 */
+        .lang-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007aff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0066cc;
+        }
+
+        /* 输入框区域 */
+        .input-group {
+            display: none; /* 初始隐藏 */
+            flex-direction: row;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 200px;
+        }
+
+        /* 问候语 */
+        #greeting {
+            display: none; /* 初始隐藏 */
+            margin-top: 20px;
+            font-size: 24px;
+            color: #333;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 1. 第一界面：同行 -->
+    <div class="lang-row" id="langSection">
+        <select id="langSelect">
+            <option value="en" selected>English</option>
+            <option value="zh">中文</option>
+        </select>
+        <button id="nextBtn1">Next</button>
+    </div>
+
+    <!-- 2. 输入界面 -->
+    <div class="input-group" id="inputSection">
+        <input type="text" id="nameInput" placeholder="Please enter your name">
+        <button id="nextBtn2">Next</button>
+    </div>
+
+    <!-- 3. 问候语 -->
+    <div id="greeting">Hello!</div>
+</div>
+
+<script>
+    const langSelect = document.getElementById('langSelect');
+    const nextBtn1 = document.getElementById('nextBtn1');
+    const nextBtn2 = document.getElementById('nextBtn2');
+    const inputSection = document.getElementById('inputSection');
+    const nameInput = document.getElementById('nameInput');
+    const greeting = document.getElementById('greeting');
+    const langSection = document.getElementById('langSection');
+
+    // 多语言文案配置
+    const texts = {
+        en: {
+            placeholder: "Please enter your name",
+            next: "Next",
+            nextWidth: "auto",   // 英文按钮：窄
+            greeting: "Nice to meet you, "
+        },
+        zh: {
+            placeholder: "请输入你的名字",
+            next: "下一步",
+            nextWidth: "90px",   // 调整为 90px，长短适中
+            greeting: "你好，非常荣幸认识你，"
+        }
+    };
+
+    // 监听语言切换，更新文字和宽度
+    langSelect.addEventListener('change', function() {
+        const lang = this.value;
+        nextBtn1.textContent = texts[lang].next;
+        nextBtn1.style.width = texts[lang].nextWidth;
+
+        nextBtn2.textContent = texts[lang].next;
+        nextBtn2.style.width = texts[lang].nextWidth;
+    });
+
+    // 第一步：进入输入界面
+    nextBtn1.addEventListener('click', function() {
+        const lang = langSelect.value;
+        langSection.style.display = 'none';
+        inputSection.style.display = 'flex';
+
+        nameInput.placeholder = texts[lang].placeholder;
+        nameInput.focus();
+    });
+
+    // 第二步：点击 Next/下一步 显示问候语
+    nextBtn2.addEventListener('click', function() {
+        const userName = nameInput.value.trim();
+        if (!userName) {
+            alert('Please enter a name / 请输入名字');
+            return;
+        }
+
+        inputSection.style.display = 'none';
+
+        const lang = langSelect.value;
+        greeting.textContent = `${texts[lang].greeting}${userName}！`;
+        greeting.style.display = 'block';
+    });
+
+    // Enter 键确认
+    nameInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') nextBtn2.click();
+    });
+</script>
+
+</body>
+</html>
