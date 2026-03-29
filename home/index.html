@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>众志通讯 - 企业官方网站</title>
+    <meta name="description" content="众志通讯，专业的手机销售与维修服务提供商，致力于为您提供优质的产品和服务。">
+    
+    <!-- 新增：网站图标 -->
+    <link rel="icon" href="./zztx.ico" type="image/x-icon">
+    
+    <!-- 全部 CSS 已内嵌 -->
+    <style>
+/* --- 全局样式重置与基础设置 --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/* --- 头部样式 --- */
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 10px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.tagline {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 3px;
+    opacity: 0.9;
+}
+/* --- 头部内容样式 --- */
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px 0;
+}
+.logo-section {
+    display: flex;
+    align-items: center;
+}
+.logo-section img {
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+}
+.text-section {
+    display: flex;
+    flex-direction: column;
+}
+/* --- 导航栏样式 --- */
+nav {
+    background-color: #34495e;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.nav-container {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center;
+    height: 50px;
+}
+.nav-links {
+    display: flex;
+    list-style: none;
+}
+.nav-links li {
+    margin: 0 15px;
+}
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+.nav-links a:hover {
+    color: #3498db;
+}
+
+/* 汉堡菜单样式 (移动端) */
+.menu-toggle {
+    display: none; /* 默认隐藏 */
+    flex-direction: column;
+    cursor: pointer;
+}
+
+/* --- 英雄区域样式 --- */
+.hero {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+    color: white;
+    text-align: center;
+    padding: 100px 0;
+}
+.hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+.hero p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.btn {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 12px 25px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.btn:hover {
+    background-color: #2980b9;
+}
+/* --- 主要内容区域通用样式 --- */
+.section {
+    padding: 80px 0;
+    background-color: white;
+}
+
+.section:nth-child(even) {
+    background-color: #f4f7f6;
+}
+.section-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.section-header h2 {
+    font-size: 36px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+.section-header p {
+    color: #777;
+    max-width: 700px;
+    margin: 0 auto;
+}
+/* --- 服务项目样式 --- */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+.service-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    padding: 30px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+.service-card h3 {
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: #2c3e50;
+}
+
+.service-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #3498db;
+}
+/* --- 关于我们样式 --- */
+.about-content {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+.about-text, .about-image {
+    flex: 1;
+}
+.about-image img {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.about-text h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.about-text p {
+    margin-bottom: 15px;
+    line-height: 1.8;
+}
+/* --- 联系我们样式 --- */
+.contact-info {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    max-width: 600px; /* 限制最大宽度 */
+    margin: 0 auto;   /* 水平居中 */
+    text-align: center; /* 内部文本居中 */
+}
+.contact-info h3 {
+    margin-bottom: 25px;
+    font-size: 24px;
+    color: #2c3e50;
+}
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    justify-content: center; /* 内容居中 */
+}
+
+.info-item span {
+    margin-right: 15px;
+    font-size: 20px;
+    color: #3498db;
+}
+
+/* --- 关键样式：让电话链接看起来像普通文本 --- */
+.phone-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: default;
+}
+.phone-link:visited {
+    text-decoration: none;
+}
+/* --- 页脚样式 --- */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-col h4 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.footer-col p, .footer-col a {
+    color: #bdc3c7;
+    text-decoration: none;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.footer-col a:hover {
+    color: white;
+}
+
+.copyright {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #34495e;
+    font-size: 14px;
+    opacity: 0.8;
+}
+/* --- 工具页面容器样式 --- */
+.tools-container {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.tool-links {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+/* --- 上传信息样式 --- */
+.upload-info {
+    background-color: black;
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 14px;
+}
+/* --- 工具页面链接样式 --- */
+.tool-link {
+    display: inline-block;
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 12px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.tool-link:hover {
+    color: #3498db;
+    border-color: #3498db;
+    background-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+.tool-link:active {
+    color: #2980b9;
+    transform: translateY(0);
+}
+
+/* --- 响应式设计 --- */
+@media (max-width: 992px) {
+    .about-content {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 36px;
+    }
+    .hero p {
+        font-size: 18px;
+    }
+    .section-header h2 {
+        font-size: 30px;
+    }
+    
+    /* 移动端头部 */
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .logo-section {
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
+    .logo-section img {
+        margin-right: 0;
+        margin-bottom: 8px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    /* 移动端导航 */
+    .nav-container {
+        justify-content: space-between; /* 让汉堡菜单靠右 */
+    }
+    .nav-links {
+        display: none; /* 隐藏默认导航 */
+        position: absolute;
+        top: 50px;
+        left: 0;
+        right: 0;
+        background-color: #34495e;
+        flex-direction: column;
+        padding: 20px;
+        z-index: 1001;
+    }
+    .nav-links.active {
+        display: flex; /* 激活时显示 */
+    }
+    .nav-links li {
+        margin: 10px 0;
+    }
+    .menu-toggle {
+        display: flex; /* 显示汉堡菜单 */
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header>
+        <div class="container header-content">
+            <div class="logo-section">
+                <img src="./zztxlogo.png" alt="众志通讯Logo">
+                <div class="text-section">
+                    <div class="logo name">众志通讯</div>
+                    <div class="tagline">您身边的通讯专家，服务企业与个人</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- 导航栏 -->
+    <nav>
+        <div class="container nav-container">
+            <ul class="nav-links">
+                <li><a href="#home">首页</a></li>
+                <li><a href="#services">服务项目</a></li>
+                <li><a href="#about">关于我们</a></li>
+                <li><a href="#contact">联系我们</a></li>
+                <li><a href="#tool">zztx工具</a></li>
+            </ul>
+            <!-- 汉堡菜单 (移动端) -->
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <span>菜单</span>
+            </div>
+        </div>
+    </nav>
+    <!-- 主要内容 -->
+    <main>
+        <!-- 英雄区域 -->
+        <section id="home" class="hero">
+            <div class="container">
+                <h1>欢迎来到众志通讯</h1>
+                <p>专注于提供高品质的通讯产品与服务，用心连接每一位客户。</p>
+                <a href="#contact" class="btn">立即联系</a>
+            </div>
+        </section>
+        <!-- 服务项目 -->
+        <section id="services" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>我们的服务</h2>
+                    <p>我们提供从企业通信解决方案到个人设备维修的全方位服务，满足您的各种需求。</p>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">[📱]</div>
+                        <h3>手机销售</h3>
+                        <p>提供各大品牌最新款手机，正品保障，企业团购享优惠。</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">[🔧]</div>
+                        <h3>设备维修</h3>
+                        <p>专业的维修团队，快速、高效地解决手机、平板等设备的各种故障。</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">[🌐]</div>
+                        <h3>企业通信</h3>
+                        <p>为企业客户提供VoIP、视频会议、企业宽带等定制化解决方案。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 关于我们 -->
+        <section id="about" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>关于我们</h2>
+                    <p>众志通讯，用心服务每一位客户。</p>
+                </div>
+                <div class="about-content">
+                    <div class="about-image">
+                        <img src="./zztx.png" alt="众志通讯店铺照片">
+                    </div>
+                    <div class="about-text">
+                        <h3>众志通讯 - 您值得信赖的通讯伙伴</h3>
+                        <p>自成立以来，众志通讯始终秉持"诚信为本，服务至上"的经营理念，致力于为广大客户提供最优质的产品和最专业的服务。</p>
+                        <p>我们拥有一支经验丰富、技术精湛的团队，无论是个人用户的手机购买与维修，还是企业客户的通信系统建设，我们都能提供一站式的解决方案。</p>
+                        <p>感谢您长期以来的支持与信任，我们将继续努力，不断提升服务品质，与您携手共进，共创美好未来。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 联系我们（已修正地址） -->
+        <section id="contact" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>联系我们</h2>
+                    <p>无论您有任何问题或需求，欢迎随时与我们联系，我们将竭诚为您服务。</p>
+                </div>
+                <div class="contact-info">
+                    <h3>联系方式</h3>
+                    <div class="info-item">
+                        <span>📞</span>
+                        <div>
+                            <h4>电话</h4>
+                            <p><a href="tel:18128071189" class="phone-link">18128071189</a></p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span>✉️</span>
+                        <div>
+                            <h4>邮箱</h4>
+                            <p><a href="mailto:liang@qq.com">liang@qq.com</a></p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span>📍</span>
+                        <div>
+                            <h4>地址</h4>
+                            <!-- 已修正为完整地址：中国广东省怀集县梁村镇众志通讯 -->
+                            <p>中国广东省怀集县梁村镇众志通讯</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 工具页面 -->
+        <section id="tool" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>ZZTX工具</h2>
+                </div>
+                <div class="tools-container">
+                    <div class="tool-links">
+                        <a href="../ztx" class="tool-link">ztx压缩工具</a>
+                        <a href="../app-cn" class="tool-link">zztx的应用</a>
+                        <a href="../Music" class="tool-link">zztx的音乐</a>
+                        <a href="../weilan" class="tool-link">zztx的秒存网盘</a>
+                        <a class="tool-link">格式工厂（未完整开发）</a>
+                        <a href="./Hacker" class="tool-link">黑客装逼工具</a>
+                        <a href="./BK" class="tool-link">ZZTX开发者的班刊</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- 页脚（已修正地址） -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>关于我们</h4>
+                    <p>专注通讯服务，用心连接客户</p>
+                    <p>诚信为本，服务至上</p>
+                </div>
+                <div class="footer-col">
+                    <h4>服务项目</h4>
+                    <a href="#services">手机销售</a>
+                    <a href="#services">设备维修</a>
+                    <a href="#services">企业通信</a>
+                </div>
+                <div class="footer-col">
+                    <h4>联系我们</h4>
+                    <a href="tel:18128071189">18128071189</a>
+                    <a href="mailto:liang@qq.com">liang@qq.com</a>
+                    <!-- 已修正为完整地址：中国广东省怀集县梁村镇众志通讯 -->
+                    <p>中国广东省怀集县梁村镇众志通讯</p>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2025 众志通讯 版权所有
+            </div>
+        </div>
+    </footer>
+    <!-- 新增：上传信息 -->
+    <div class="upload-info">
+        上传日期：2025年10月3日11:20 | 上传人：梁朔光
+    </div>
+
+    <!-- 全部 JS 已内嵌 -->
+    <script>
+// 汉堡菜单切换功能
+function toggleMenu() {
+    const navLinks = document.querySelector('.nav-links');
+    navLinks.classList.toggle('active');
+}
+    </script>
+</body>
+</html>
