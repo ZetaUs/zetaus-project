@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .upload-section {
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .upload-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            color: #fff;
+        }
+
+        .upload-btn input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .album-cover {
+            width: 100%;
+            padding-top: 100%;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album-cover img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .song-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .song-artist {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+        }
+
+        .lrc-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .lrc-container:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .lrc-zoom-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 107, 107, 0.8);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+        }
+
+        .lrc-zoom-btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .lrc-fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            cursor: default;
+        }
+
+        .lrc-fullscreen-content {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .lrc-fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .lrc-fullscreen-close {
+            background: rgba(255, 107, 107, 0.9);
+            border: none;
+            color: #fff;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        .lrc-fullscreen-close:hover {
+            background: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .lrc-fullscreen-info {
+            flex: 1;
+            text-align: center;
+            margin-right: 44px;
+        }
+
+        .lrc-fullscreen-title {
+            color: #fff;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .lrc-fullscreen-artist {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+        }
+
+        .lrc-fullscreen-container {
+            max-height: 65vh;
+            overflow-y: auto;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+        }
+
+        .lrc-fullscreen-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .lrc-fullscreen-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .lrc-fullscreen-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 107, 0.5);
+            border-radius: 4px;
+        }
+
+        .lrc-fullscreen-line {
+            text-align: center;
+            padding: 16px 0;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 22px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .lrc-fullscreen-line.active {
+            color: #fff;
+            font-size: 40px;
+            font-weight: 600;
+            transform: scale(1.02);
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .lrc-fullscreen-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .lrc-fullscreen-controls button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .lrc-fullscreen-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lrc-fullscreen-controls span {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .lrc-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .lrc-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .lrc-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .lrc-line {
+            text-align: center;
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .lrc-line.active {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            transform: scale(1.05);
+        }
+
+        .progress-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar:hover .progress-fill::after {
+            opacity: 1;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            border-radius: 3px;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .control-btn.play {
+            width: 70px;
+            height: 70px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        .control-btn.play:hover {
+            transform: scale(1.15);
+        }
+
+        .volume-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .volume-container:hover {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+        }
+
+        .volume-icon {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .volume-bar-wrapper {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .volume-container:hover .volume-bar-wrapper {
+            display: flex;
+        }
+
+        .volume-bar {
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .song-list {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+
+        .song-list-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            position: relative;
+        }
+
+        .song-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .song-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .song-item.active {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .song-item-number {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            margin-right: 15px;
+            width: 20px;
+        }
+
+        .song-item-info {
+            flex: 1;
+        }
+
+        .song-item-title {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .song-item-artist {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .delete-btn {
+            background: rgba(255, 107, 107, 0.5);
+            border: none;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ff6b6b;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .playing .album-cover img {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container" id="player">
+        <div class="upload-section">
+            <label class="upload-btn">
+                <span>&#128218; 上传音乐</span>
+                <input type="file" id="musicFile" accept="audio/*" multiple>
+            </label>
+            <label class="upload-btn">
+                <span>&#128190; 上传歌词</span>
+                <input type="file" id="lrcFile" accept=".lrc" multiple>
+            </label>
+        </div>
+
+        <div class="album-cover">
+            <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=music%20album%20cover%20art%20abstract%20colorful%20waves%20dark%20background&image_size=square" alt="专辑封面">
+        </div>
+        
+        <div class="song-info">
+            <div class="song-title" id="songTitle">请上传音乐文件</div>
+            <div class="song-artist" id="songArtist">选择歌曲开始播放</div>
+        </div>
+        
+        <div class="lrc-container" id="lrcContainer">
+            <button class="lrc-zoom-btn" id="lrcZoomBtn">&#128269;</button>
+            <div class="lrc-line">请上传音乐和歌词文件</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">00:00</span>
+                <span id="totalTime">00:00</span>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="prevBtn">&#171;</button>
+            <button class="control-btn play" id="playBtn">&#9654;</button>
+            <button class="control-btn" id="nextBtn">&#187;</button>
+        </div>
+        
+        <div class="volume-container">
+            <div class="volume-icon" id="volumeIcon">&#128266;</div>
+            <div class="volume-bar-wrapper">
+                <div class="volume-bar" id="volumeBar">
+                    <div class="volume-fill" id="volumeFill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="song-list">
+            <div class="song-list-title">播放列表</div>
+            <div id="songListContainer">
+                <div class="song-item empty">
+                    <div class="song-item-info" style="text-align: center;">
+                        <div class="song-item-title" style="color: rgba(255,255,255,0.5);">暂无歌曲</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let songs = [];
+        const lrcCache = {};
+
+        const audio = new Audio();
+        let currentSongIndex = -1;
+        let lrcLines = [];
+        let isPlaying = false;
+
+        const player = document.getElementById('player');
+        const songTitle = document.getElementById('songTitle');
+        const songArtist = document.getElementById('songArtist');
+        const lrcContainer = document.getElementById('lrcContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTime = document.getElementById('currentTime');
+        const totalTime = document.getElementById('totalTime');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const volumeBar = document.getElementById('volumeBar');
+        const volumeFill = document.getElementById('volumeFill');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const songListContainer = document.getElementById('songListContainer');
+        const musicFileInput = document.getElementById('musicFile');
+        const lrcFileInput = document.getElementById('lrcFile');
+        const lrcZoomBtn = document.getElementById('lrcZoomBtn');
+        
+        let lrcFontSize = 1;
+        let isFullscreen = false;
+        let fullscreenOverlay = null;
+
+        function parseLRC(lrcText) {
+            const lines = lrcText.split('\n');
+            const parsed = [];
+            const regex = /\[(\d{2}):(\d{2})\.(\d{2,3})\](.+)/;
+            
+            lines.forEach(line => {
+                const match = line.match(regex);
+                if (match) {
+                    const minutes = parseInt(match[1]);
+                    const seconds = parseInt(match[2]);
+                    const milliseconds = match[3].length === 2 ? parseInt(match[3]) * 10 : parseInt(match[3]);
+                    const time = minutes * 60 + seconds + milliseconds / 1000;
+                    parsed.push({ time, text: match[4] });
+                }
+            });
+            
+            return parsed.sort((a, b) => a.time - b.time);
+        }
+
+        function displayLRC() {
+            if (!audio.duration || lrcLines.length === 0) {
+                lrcContainer.innerHTML = '<button class="lrc-zoom-btn" id="lrcZoomBtn">&#128269;</button><div class="lrc-line">暂无歌词</div>';
+                initLrcZoomBtn();
+                return;
+            }
+
+            const currentTime = audio.currentTime;
+            let activeIndex = -1;
+            
+            lrcLines.forEach((line, index) => {
+                if (currentTime >= line.time) {
+                    activeIndex = index;
+                }
+            });
+            
+            lrcContainer.innerHTML = '<button class="lrc-zoom-btn" id="lrcZoomBtn">&#128269;</button>';
+            
+            lrcLines.forEach((line, index) => {
+                const div = document.createElement('div');
+                div.className = `lrc-line${index === activeIndex ? ' active' : ''}`;
+                div.textContent = line.text;
+                lrcContainer.appendChild(div);
+                
+                if (index === activeIndex) {
+                    div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+            
+            initLrcZoomBtn();
+            
+            if (isFullscreen) {
+                updateFullscreenLRC();
+            }
+        }
+
+        function initLrcZoomBtn() {
+            const btn = document.getElementById('lrcZoomBtn');
+            if (btn) {
+                btn.onclick = openLrcFullscreen;
+            }
+        }
+
+        function openLrcFullscreen() {
+            if (lrcLines.length === 0) {
+                alert('暂无歌词可放大');
+                return;
+            }
+            
+            isFullscreen = true;
+            lrcFontSize = 1;
+            
+            fullscreenOverlay = document.createElement('div');
+            fullscreenOverlay.className = 'lrc-fullscreen-overlay';
+            fullscreenOverlay.innerHTML = `
+                <div class="lrc-fullscreen-content">
+                    <div class="lrc-fullscreen-header">
+                        <div class="lrc-fullscreen-info">
+                            <div class="lrc-fullscreen-title" id="fullscreenTitle">${songTitle.textContent}</div>
+                            <div class="lrc-fullscreen-artist" id="fullscreenArtist">${songArtist.textContent}</div>
+                        </div>
+                        <button class="lrc-fullscreen-close" id="fullscreenCloseBtn">×</button>
+                    </div>
+                    <div class="lrc-fullscreen-container" id="fullscreenLrcContainer"></div>
+                </div>
+                <div class="lrc-fullscreen-controls">
+                    <button id="lrcFontMinus">− 缩小</button>
+                    <span id="lrcFontSizeDisplay">100%</span>
+                    <button id="lrcFontPlus">放大 +</button>
+                </div>
+            `;
+            
+            document.body.appendChild(fullscreenOverlay);
+            
+            updateFullscreenLRC();
+            
+            document.getElementById('fullscreenCloseBtn').addEventListener('click', closeLrcFullscreen);
+            document.getElementById('lrcFontMinus').addEventListener('click', decreaseLrcFontSize);
+            document.getElementById('lrcFontPlus').addEventListener('click', increaseLrcFontSize);
+            
+            fullscreenOverlay.addEventListener('click', (e) => {
+                if (e.target === fullscreenOverlay) {
+                    closeLrcFullscreen();
+                }
+            });
+            
+            document.addEventListener('keydown', handleFullscreenKeydown);
+        }
+
+        function closeLrcFullscreen() {
+            if (fullscreenOverlay) {
+                document.body.removeChild(fullscreenOverlay);
+                fullscreenOverlay = null;
+                isFullscreen = false;
+                lrcFontSize = 1;
+            }
+            document.removeEventListener('keydown', handleFullscreenKeydown);
+        }
+
+        function handleFullscreenKeydown(e) {
+            if (!isFullscreen) return;
+            
+            if (e.key === 'Escape') {
+                closeLrcFullscreen();
+            } else if (e.key === '+') {
+                increaseLrcFontSize();
+            } else if (e.key === '-') {
+                decreaseLrcFontSize();
+            }
+        }
+
+        function increaseLrcFontSize() {
+            if (lrcFontSize < 2) {
+                lrcFontSize += 0.1;
+                updateFullscreenLRC();
+            }
+        }
+
+        function decreaseLrcFontSize() {
+            if (lrcFontSize > 0.5) {
+                lrcFontSize -= 0.1;
+                updateFullscreenLRC();
+            }
+        }
+
+        function updateFullscreenLRC() {
+            if (!fullscreenOverlay) return;
+            
+            const container = document.getElementById('fullscreenLrcContainer');
+            const fontSizeDisplay = document.getElementById('lrcFontSizeDisplay');
+            const titleEl = document.getElementById('fullscreenTitle');
+            const artistEl = document.getElementById('fullscreenArtist');
+            
+            titleEl.textContent = songTitle.textContent;
+            artistEl.textContent = songArtist.textContent;
+            fontSizeDisplay.textContent = `${Math.round(lrcFontSize * 100)}%`;
+            
+            const currentTime = audio.currentTime;
+            let activeIndex = -1;
+            
+            lrcLines.forEach((line, index) => {
+                if (currentTime >= line.time) {
+                    activeIndex = index;
+                }
+            });
+            
+            container.innerHTML = '';
+            
+            lrcLines.forEach((line, index) => {
+                const div = document.createElement('div');
+                div.className = `lrc-fullscreen-line${index === activeIndex ? ' active' : ''}`;
+                div.textContent = line.text;
+                div.style.fontSize = `${index === activeIndex ? 32 * lrcFontSize : 20 * lrcFontSize}px`;
+                div.style.padding = `${12 * lrcFontSize}px 0`;
+                container.appendChild(div);
+                
+                if (index === activeIndex) {
+                    div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
+
+        function updateSongList() {
+            songListContainer.innerHTML = '';
+            
+            if (songs.length === 0) {
+                songListContainer.innerHTML = `
+                    <div class="song-item empty">
+                        <div class="song-item-info" style="text-align: center;">
+                            <div class="song-item-title" style="color: rgba(255,255,255,0.5);">暂无歌曲</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            songs.forEach((song, index) => {
+                const div = document.createElement('div');
+                div.className = `song-item${index === currentSongIndex ? ' active' : ''}`;
+                div.dataset.index = index;
+                div.innerHTML = `
+                    <div class="song-item-number">${index + 1}</div>
+                    <div class="song-item-info">
+                        <div class="song-item-title">${song.title}</div>
+                        <div class="song-item-artist">${song.artist}</div>
+                    </div>
+                    <button class="delete-btn" data-index="${index}">×</button>
+                `;
+                
+                div.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('delete-btn')) return;
+                    loadSong(index);
+                    if (!isPlaying) togglePlay();
+                });
+                
+                div.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteSong(index);
+                });
+                
+                songListContainer.appendChild(div);
+            });
+        }
+
+        function deleteSong(index) {
+            songs.splice(index, 1);
+            
+            if (currentSongIndex >= songs.length) {
+                currentSongIndex = Math.max(0, songs.length - 1);
+            }
+            
+            if (songs.length === 0) {
+                audio.pause();
+                audio.src = '';
+                songTitle.textContent = '请上传音乐文件';
+                songArtist.textContent = '选择歌曲开始播放';
+                lrcLines = [];
+                displayLRC();
+                currentTime.textContent = '00:00';
+                totalTime.textContent = '00:00';
+                progressFill.style.width = '0%';
+                isPlaying = false;
+                playBtn.innerHTML = '&#9654;';
+                player.classList.remove('playing');
+            } else {
+                loadSong(currentSongIndex);
+            }
+            
+            updateSongList();
+        }
+
+        function loadSong(index) {
+            if (index < 0 || index >= songs.length) return;
+            
+            const song = songs[index];
+            audio.src = song.src;
+            songTitle.textContent = song.title;
+            songArtist.textContent = song.artist;
+            
+            if (song.lrc) {
+                lrcLines = parseLRC(song.lrc);
+            } else {
+                lrcLines = [];
+            }
+            
+            currentSongIndex = index;
+            displayLRC();
+            updateSongList();
+        }
+
+        function togglePlay() {
+            if (songs.length === 0) {
+                alert('请先上传音乐文件');
+                return;
+            }
+            
+            if (isPlaying) {
+                audio.pause();
+                playBtn.innerHTML = '&#9654;';
+                player.classList.remove('playing');
+            } else {
+                audio.play();
+                playBtn.innerHTML = '&#9616;&#9616;';
+                player.classList.add('playing');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function formatTime(time) {
+            if (isNaN(time)) return '00:00';
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        audio.addEventListener('timeupdate', () => {
+            if (!audio.duration) return;
+            const progress = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = `${progress}%`;
+            currentTime.textContent = formatTime(audio.currentTime);
+            displayLRC();
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTime.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            if (currentSongIndex < songs.length - 1) {
+                loadSong(currentSongIndex + 1);
+                audio.play();
+            } else if (songs.length > 0) {
+                loadSong(0);
+                audio.play();
+            }
+        });
+
+        audio.addEventListener('error', () => {
+            console.error('音频加载失败');
+            if (currentSongIndex < songs.length - 1) {
+                loadSong(currentSongIndex + 1);
+            }
+        });
+
+        progressBar.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        });
+
+        volumeBar.addEventListener('click', (e) => {
+            const rect = volumeBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.volume = percent;
+            volumeFill.style.width = `${percent * 100}%`;
+            
+            if (percent === 0) {
+                volumeIcon.innerHTML = '&#128268;';
+            } else if (percent < 0.5) {
+                volumeIcon.innerHTML = '&#128267;';
+            } else {
+                volumeIcon.innerHTML = '&#128266;';
+            }
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+
+        prevBtn.addEventListener('click', () => {
+            if (songs.length === 0) return;
+            if (currentSongIndex > 0) {
+                loadSong(currentSongIndex - 1);
+                if (isPlaying) audio.play();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (songs.length === 0) return;
+            if (currentSongIndex < songs.length - 1) {
+                loadSong(currentSongIndex + 1);
+                if (isPlaying) audio.play();
+            }
+        });
+
+        function getFileNameWithoutExtension(fileName) {
+            return fileName.replace(/\.[^/.]+$/, '');
+        }
+
+        function extractArtistAndTitle(fileName) {
+            const cleanName = getFileNameWithoutExtension(fileName);
+            const parts = cleanName.split('-').map(p => p.trim());
+            if (parts.length >= 2) {
+                return { artist: parts[0], title: parts.slice(1).join(' - ') };
+            }
+            return { artist: '未知艺术家', title: cleanName };
+        }
+
+        musicFileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const url = URL.createObjectURL(file);
+                const { artist, title } = extractArtistAndTitle(file.name);
+                
+                let lrcText = '';
+                const lrcFileName = getFileNameWithoutExtension(file.name) + '.lrc';
+                if (lrcCache[lrcFileName]) {
+                    lrcText = lrcCache[lrcFileName];
+                    delete lrcCache[lrcFileName];
+                }
+                
+                songs.push({
+                    title,
+                    artist,
+                    src: url,
+                    lrc: lrcText,
+                    fileName: file.name
+                });
+            }
+
+            if (currentSongIndex === -1 && songs.length > 0) {
+                loadSong(0);
+            }
+            
+            updateSongList();
+            musicFileInput.value = '';
+        });
+
+        lrcFileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    const lrcText = event.target.result;
+                    const lrcFileName = file.name;
+                    const songFileName = getFileNameWithoutExtension(lrcFileName);
+                    
+                    const existingSong = songs.find(s => 
+                        getFileNameWithoutExtension(s.fileName) === songFileName
+                    );
+                    
+                    if (existingSong) {
+                        existingSong.lrc = lrcText;
+                        if (currentSongIndex === songs.indexOf(existingSong)) {
+                            lrcLines = parseLRC(lrcText);
+                            displayLRC();
+                        }
+                    } else {
+                        lrcCache[lrcFileName] = lrcText;
+                    }
+                };
+                
+                reader.readAsText(file, 'UTF-8');
+            }
+            
+            lrcFileInput.value = '';
+        });
+
+        audio.volume = 1;
+        volumeFill.style.width = '100%';
+        volumeIcon.innerHTML = '&#128266;';
+    </script>
+</body>
+</html>
