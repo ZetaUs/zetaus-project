@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZSD 3D 文件编辑器</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow: hidden;
+            height: 100vh;
+        }
+        #toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #16213e;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+            border-bottom: 2px solid #0f3460;
+            z-index: 100;
+        }
+        .tool-btn {
+            padding: 8px 16px;
+            background: #0f3460;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .tool-btn:hover {
+            background: #e94560;
+        }
+        .tool-btn.active {
+            background: #e94560;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 250px;
+            bottom: 0;
+            background: #0f0f1a;
+        }
+        #properties {
+            position: fixed;
+            top: 50px;
+            right: 0;
+            width: 250px;
+            bottom: 0;
+            background: #16213e;
+            padding: 15px;
+            overflow-y: auto;
+            border-left: 2px solid #0f3460;
+        }
+        .prop-group {
+            margin-bottom: 15px;
+        }
+        .prop-group h3 {
+            font-size: 12px;
+            color: #e94560;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .prop-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .prop-row label {
+            width: 60px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .prop-row input[type="number"],
+        .prop-row input[type="text"],
+        .prop-row input[type="color"] {
+            flex: 1;
+            padding: 5px 8px;
+            background: #0f3460;
+            border: 1px solid #1a4a7a;
+            color: #fff;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .prop-row input[type="color"] {
+            height: 28px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .prop-row input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+        .file-info {
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+        .file-info .filename {
+            color: #e94560;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        #file-list {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 200px;
+            bottom: 0;
+            background: #0f3460;
+            padding: 10px;
+            overflow-y: auto;
+            border-right: 2px solid #16213e;
+        }
+        .scene-item {
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: #16213e;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .scene-item:hover, .scene-item.selected {
+            background: #e94560;
+        }
+        #canvas-container canvas {
+            display: block;
+        }
+        #status {
+            position: fixed;
+            bottom: 5px;
+            left: 200px;
+            right: 250px;
+            height: 25px;
+            background: rgba(22, 33, 62, 0.9);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 11px;
+            color: #888;
+            border-top: 1px solid #0f3460;
+        }
+        .help-text {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button class="tool-btn" onclick="createBox()">📦 立方体</button>
+        <button class="tool-btn" onclick="createSphere()">🔮 球体</button>
+        <button class="tool-btn" onclick="createCylinder()">🛢️ 圆柱</button>
+        <button class="tool-btn" onclick="createCone()">🔺 圆锥</button>
+        <button class="tool-btn" onclick="createTorus()">🍩 圆环</button>
+        <button class="tool-btn" onclick="toggleWireframe()">📏 线框</button>
+        <span style="flex:1"></span>
+        <button class="tool-btn" onclick="newScene()">🆕 新建</button>
+        <button class="tool-btn" onclick="saveFile()">💾 保存 .zsd</button>
+        <button class="tool-btn" onclick="saveFileEx()">💾 保存 .zsdx</button>
+        <button class="tool-btn" onclick="loadFile()">📂 打开</button>
+        <input type="file" id="fileInput" accept=".zsd,.zsdx" style="display:none" onchange="handleFileLoad(event)">
+        <button class="tool-btn" onclick="downloadLocal()">🌐 网页端</button>
+        <button class="tool-btn" onclick="openWebVersion()">💻 本地端</button>
+    </div>
+
+    <div id="file-list">
+        <div style="font-size:11px;color:#888;margin-bottom:10px;">场景对象</div>
+        <div id="objectList"></div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="properties">
+        <div class="file-info" id="fileInfo">
+            <div>未命名场景</div>
+            <div style="color:#666;margin-top:3px;">.zsd / .zsdx</div>
+        </div>
+        <div class="prop-group">
+            <h3>变换</h3>
+            <div class="prop-row">
+                <label>X位置</label>
+                <input type="number" id="posX" step="0.1" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>Y位置</label>
+                <input type="number" id="posY" step="0.1" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>Z位置</label>
+                <input type="number" id="posZ" step="0.1" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>旋转X</label>
+                <input type="range" id="rotX" min="-180" max="180" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>旋转Y</label>
+                <input type="range" id="rotY" min="-180" max="180" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>旋转Z</label>
+                <input type="range" id="rotZ" min="-180" max="180" onchange="updateTransform()">
+            </div>
+            <div class="prop-row">
+                <label>缩放</label>
+                <input type="range" id="scale" min="0.1" max="5" step="0.1" onchange="updateTransform()">
+            </div>
+        </div>
+        <div class="prop-group">
+            <h3>材质</h3>
+            <div class="prop-row">
+                <label>颜色</label>
+                <input type="color" id="color" value="#e94560" onchange="updateMaterial()">
+            </div>
+            <div class="prop-row">
+                <label>金属度</label>
+                <input type="range" id="metalness" min="0" max="1" step="0.1" onchange="updateMaterial()">
+            </div>
+            <div class="prop-row">
+                <label>粗糙度</label>
+                <input type="range" id="roughness" min="0" max="1" step="0.1" onchange="updateMaterial()">
+            </div>
+        </div>
+        <div class="prop-group">
+            <h3>操作</h3>
+            <button class="tool-btn" style="width:100%" onclick="duplicateSelected()">📋 复制</button>
+            <button class="tool-btn" style="width:100%;margin-top:5px" onclick="deleteSelected()">🗑️ 删除</button>
+        </div>
+        <div class="help-text">
+            鼠标左键：旋转视角<br>
+            鼠标右键：平移视角<br>
+            滚轮：缩放<br>
+            点击对象：选择
+        </div>
+    </div>
+
+    <div id="status">就绪 | 对象: 0 | .zsd 格式</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        let scene, camera, renderer, controls;
+        let objects = [];
+        let selectedObject = null;
+        let currentFilename = '未命名';
+        let isWireframe = false;
+
+        const MAGIC_HEADER = { zsd: [0xC4,0x7A,0x9F,0x2E], zsdx: [0x8B,0x3C,0xD1,0x5E] };
+        const VERSION = { zsd: 1, zsdx: 2 };
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f0f1a);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+            const grid = new THREE.GridHelper(20, 20, 0x0f3460, 0x16213e);
+            scene.add(grid);
+
+            camera = new THREE.PerspectiveCamera(60, (window.innerWidth - 450) / (window.innerHeight - 50), 0.1, 1000);
+            camera.position.set(5, 5, 8);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth - 450, window.innerHeight - 75);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            renderer.domElement.addEventListener('click', (event) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(objects);
+                if (intersects.length > 0) {
+                    selectObject(intersects[0].object);
+                } else {
+                    deselectAll();
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = (window.innerWidth - 450) / (window.innerHeight - 50);
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth - 450, window.innerHeight - 75);
+            });
+
+            loadFromStorage();
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function createBox() {
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xe94560, metalness: 0.3, roughness: 0.7 });
+            const mesh = new THREE.Mesh(geo, mat);
+            addObjectToScene(mesh, '立方体');
+        }
+
+        function createSphere() {
+            const geo = new THREE.SphereGeometry(0.5, 32, 32);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x4ecca3, metalness: 0.3, roughness: 0.7 });
+            const mesh = new THREE.Mesh(geo, mat);
+            addObjectToScene(mesh, '球体');
+        }
+
+        function createCylinder() {
+            const geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xf39c12, metalness: 0.3, roughness: 0.7 });
+            const mesh = new THREE.Mesh(geo, mat);
+            addObjectToScene(mesh, '圆柱');
+        }
+
+        function createCone() {
+            const geo = new THREE.ConeGeometry(0.5, 1, 32);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x9b59b6, metalness: 0.3, roughness: 0.7 });
+            const mesh = new THREE.Mesh(geo, mat);
+            addObjectToScene(mesh, '圆锥');
+        }
+
+        function createTorus() {
+            const geo = new THREE.TorusGeometry(0.5, 0.2, 16, 100);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x3498db, metalness: 0.3, roughness: 0.7 });
+            const mesh = new THREE.Mesh(geo, mat);
+            addObjectToScene(mesh, '圆环');
+        }
+
+        function addObjectToScene(mesh, defaultName) {
+            mesh.name = defaultName + '_' + Date.now();
+            mesh.userData.type = defaultName;
+            scene.add(mesh);
+            objects.push(mesh);
+            selectObject(mesh);
+            updateObjectList();
+            updateStatus();
+        }
+
+        function selectObject(obj) {
+            deselectAll();
+            selectedObject = obj;
+            obj.userData.selected = true;
+            updateObjectList();
+            updateProperties();
+        }
+
+        function deselectAll() {
+            if (selectedObject) {
+                selectedObject.userData.selected = false;
+                selectedObject = null;
+            }
+        }
+
+        function updateObjectList() {
+            const list = document.getElementById('objectList');
+            list.innerHTML = '';
+            objects.forEach(obj => {
+                const div = document.createElement('div');
+                div.className = 'scene-item' + (obj.userData.selected ? ' selected' : '');
+                div.textContent = (obj.userData.selected ? '▶ ' : '') + obj.userData.type + ' [' + obj.name.split('_')[0] + ']';
+                div.onclick = () => selectObject(obj);
+                list.appendChild(div);
+            });
+        }
+
+        function updateProperties() {
+            if (!selectedObject) return;
+            document.getElementById('posX').value = selectedObject.position.x.toFixed(2);
+            document.getElementById('posY').value = selectedObject.position.y.toFixed(2);
+            document.getElementById('posZ').value = selectedObject.position.z.toFixed(2);
+            document.getElementById('rotX').value = THREE.MathUtils.radToDeg(selectedObject.rotation.x);
+            document.getElementById('rotY').value = THREE.MathUtils.radToDeg(selectedObject.rotation.y);
+            document.getElementById('rotZ').value = THREE.MathUtils.radToDeg(selectedObject.rotation.z);
+            document.getElementById('scale').value = selectedObject.scale.x;
+            const col = selectedObject.material.color;
+            document.getElementById('color').value = '#' + col.getHexString();
+            document.getElementById('metalness').value = selectedObject.material.metalness;
+            document.getElementById('roughness').value = selectedObject.material.roughness;
+        }
+
+        function updateTransform() {
+            if (!selectedObject) return;
+            selectedObject.position.x = parseFloat(document.getElementById('posX').value) || 0;
+            selectedObject.position.y = parseFloat(document.getElementById('posY').value) || 0;
+            selectedObject.position.z = parseFloat(document.getElementById('posZ').value) || 0;
+            selectedObject.rotation.x = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rotX').value) || 0);
+            selectedObject.rotation.y = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rotY').value) || 0);
+            selectedObject.rotation.z = THREE.MathUtils.degToRad(parseFloat(document.getElementById('rotZ').value) || 0);
+            const s = parseFloat(document.getElementById('scale').value) || 1;
+            selectedObject.scale.set(s, s, s);
+        }
+
+        function updateMaterial() {
+            if (!selectedObject) return;
+            selectedObject.material.color.set(document.getElementById('color').value);
+            selectedObject.material.metalness = parseFloat(document.getElementById('metalness').value);
+            selectedObject.material.roughness = parseFloat(document.getElementById('roughness').value);
+            selectedObject.material.needsUpdate = true;
+        }
+
+        function duplicateSelected() {
+            if (!selectedObject) return;
+            const geo = selectedObject.geometry.clone();
+            const mat = selectedObject.material.clone();
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.position.copy(selectedObject.position);
+            mesh.position.x += 1.5;
+            mesh.rotation.copy(selectedObject.rotation);
+            mesh.scale.copy(selectedObject.scale);
+            mesh.name = selectedObject.userData.type + '_' + Date.now();
+            mesh.userData.type = selectedObject.userData.type;
+            scene.add(mesh);
+            objects.push(mesh);
+            selectObject(mesh);
+            updateObjectList();
+            updateStatus();
+        }
+
+        function deleteSelected() {
+            if (!selectedObject) return;
+            scene.remove(selectedObject);
+            objects = objects.filter(o => o !== selectedObject);
+            selectedObject.geometry.dispose();
+            selectedObject.material.dispose();
+            selectedObject = null;
+            updateObjectList();
+            updateProperties();
+            updateStatus();
+        }
+
+        function toggleWireframe() {
+            isWireframe = !isWireframe;
+            objects.forEach(obj => {
+                if (obj.material) {
+                    obj.material.wireframe = isWireframe;
+                    obj.material.needsUpdate = true;
+                }
+            });
+            document.querySelector('[onclick="toggleWireframe()"]').classList.toggle('active', isWireframe);
+        }
+
+        function newScene() {
+            if (objects.length > 0 && !confirm('确定要新建场景吗？未保存的更改将丢失。')) return;
+            objects.forEach(obj => {
+                scene.remove(obj);
+                obj.geometry.dispose();
+                obj.material.dispose();
+            });
+            objects = [];
+            selectedObject = null;
+            isWireframe = false;
+            document.querySelector('[onclick="toggleWireframe()"]').classList.remove('active');
+            currentFilename = '未命名';
+            document.getElementById('fileInfo').innerHTML = '<div>未命名场景</div><div style="color:#666;margin-top:3px;">.zsd / .zsdx</div>';
+            localStorage.removeItem('zsdeditor_lastfile');
+            localStorage.removeItem('zsdeditor_lastfilename');
+            updateObjectList();
+            updateStatus();
+        }
+
+        function downloadLocal() {
+            if (window.pywebview && window.pywebview.api) {
+                window.pywebview.api.download_local().then(function(result) {
+                    alert(result);
+                });
+            } else {
+                let a = document.createElement('a');
+                a.href = 'ZSDeditor_Setup_x64.exe';
+                a.download = 'ZSDeditor_Setup_x64.exe';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+
+        function openWebVersion() {
+            if (window.pywebview && window.pywebview.api) {
+                window.pywebview.api.open_web_version();
+            } else {
+                window.open('https://zztxorg.dpdns.org/ZSD', '_blank');
+            }
+        }
+
+        function updateStatus() {
+            document.getElementById('status').textContent = `就绪 | 对象: ${objects.length} | .zsd 格式`;
+        }
+
+        function saveToStorage(content, filename) {
+            try {
+                localStorage.setItem('zsdeditor_lastfile', content);
+                localStorage.setItem('zsdeditor_lastfilename', filename);
+            } catch (e) {
+                console.error('Failed to save to localStorage:', e);
+            }
+        }
+
+        function loadSceneData(data, filename, ext) {
+            objects.forEach(obj => {
+                scene.remove(obj);
+                obj.geometry.dispose();
+                obj.material.dispose();
+            });
+            objects = [];
+            isWireframe = false;
+            document.querySelector('[onclick="toggleWireframe()"]').classList.remove('active');
+
+            data.objects.forEach(objData => {
+                let geo, mat;
+                switch (objData.type) {
+                    case '立方体': geo = new THREE.BoxGeometry(1, 1, 1); break;
+                    case '球体': geo = new THREE.SphereGeometry(0.5, 32, 32); break;
+                    case '圆柱': geo = new THREE.CylinderGeometry(0.5, 0.5, 1, 32); break;
+                    case '圆锥': geo = new THREE.ConeGeometry(0.5, 1, 32); break;
+                    case '圆环': geo = new THREE.TorusGeometry(0.5, 0.2, 16, 100); break;
+                    default: geo = new THREE.BoxGeometry(1, 1, 1);
+                }
+                mat = new THREE.MeshStandardMaterial({
+                    color: objData.color,
+                    metalness: objData.metalness,
+                    roughness: objData.roughness,
+                    wireframe: objData.wireframe || false
+                });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.name = objData.name;
+                mesh.userData.type = objData.type;
+                mesh.position.set(objData.position.x, objData.position.y, objData.position.z);
+                mesh.rotation.set(objData.rotation.x, objData.rotation.y, objData.rotation.z);
+                mesh.scale.set(objData.scale.x, objData.scale.y, objData.scale.z);
+                scene.add(mesh);
+                objects.push(mesh);
+            });
+
+            if (data.header && data.header.wireframe) {
+                isWireframe = true;
+                objects.forEach(obj => {
+                    if (obj.material) {
+                        obj.material.wireframe = true;
+                        obj.material.needsUpdate = true;
+                    }
+                });
+                document.querySelector('[onclick="toggleWireframe()"]').classList.add('active');
+            }
+
+            currentFilename = filename.replace(/\.(zsd|zsdx)$/i, '');
+            document.getElementById('fileInfo').innerHTML = `<div class="filename">${filename}</div><div style="color:#666;margin-top:3px;">${ext.toUpperCase()} 格式 | ${objects.length} 对象</div>`;
+            updateObjectList();
+            updateStatus();
+        }
+
+        function loadFromStorage() {
+            try {
+                const content = localStorage.getItem('zsdeditor_lastfile');
+                const filename = localStorage.getItem('zsdeditor_lastfilename');
+                if (content && filename) {
+                    const ext = filename.split('.').pop().toLowerCase();
+                    const data = decodeData(content);
+                    if (data && data.objects && data.objects.length > 0) {
+                        loadSceneData(data, filename, ext);
+                        return true;
+                    } else {
+                        document.getElementById('fileInfo').innerHTML = '<div style="color:#666;">未保存任何内容</div><div style="color:#444;font-size:10px;margin-top:5px;">创建一些对象后会自动保存</div>';
+                    }
+                } else {
+                    document.getElementById('fileInfo').innerHTML = '<div style="color:#666;">欢迎使用 ZSD 3D 编辑器</div><div style="color:#444;font-size:10px;margin-top:5px;">创建对象后会自动保存</div>';
+                }
+            } catch (e) {
+                console.error('Failed to load from localStorage:', e);
+            }
+            return false;
+        }
+
+        function encodeData(data) {
+            const encoder = new TextEncoder('utf-8');
+            const jsonStr = JSON.stringify(data);
+            const rawBytes = encoder.encode(jsonStr);
+            const key = 0x87;
+            let result = '';
+            for (let i = 0; i < rawBytes.length; i++) {
+                const encrypted = rawBytes[i] ^ key;
+                result += ('0' + encrypted.toString(16)).slice(-2);
+            }
+            return result;
+        }
+
+        function decodeData(encoded) {
+            try {
+                const cleanEncoded = encoded.replace(/[^0-9a-fA-F]/g, '');
+                const byteCount = cleanEncoded.length / 2;
+                const bytes = new Uint8Array(byteCount);
+                for (let i = 0; i < byteCount; i++) {
+                    bytes[i] = parseInt(cleanEncoded.substr(i * 2, 2), 16);
+                }
+                const key = 0x87;
+                const decryptedBytes = new Uint8Array(byteCount);
+                for (let i = 0; i < byteCount; i++) {
+                    decryptedBytes[i] = bytes[i] ^ key;
+                }
+                const decoder = new TextDecoder('utf-8');
+                const jsonStr = decoder.decode(decryptedBytes);
+                return JSON.parse(jsonStr);
+            } catch (e) {
+                console.error('Decode error:', e);
+                return null;
+            }
+        }
+
+        function createFileContent(ext) {
+            const objData = objects.map(obj => ({
+                type: obj.userData.type,
+                name: obj.name,
+                position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
+                rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
+                scale: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z },
+                color: obj.material.color.getHex(),
+                metalness: obj.material.metalness,
+                roughness: obj.material.roughness,
+                wireframe: obj.material.wireframe
+            }));
+
+            const header = {
+                magic: MAGIC_HEADER[ext],
+                version: VERSION[ext],
+                timestamp: Date.now(),
+                generator: 'ZSD3DEditor',
+                wireframe: isWireframe
+            };
+
+            return encodeData({ header, objects: objData });
+        }
+
+        function saveFile() {
+            saveFileWithExtension('zsd');
+        }
+
+        function saveFileEx() {
+            saveFileWithExtension('zsdx');
+        }
+
+        function saveFileWithExtension(ext) {
+            const content = createFileContent(ext);
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (currentFilename === '未命名' ? 'scene' : currentFilename) + '.' + ext;
+            a.click();
+            URL.revokeObjectURL(url);
+            currentFilename = a.download.replace('.' + ext, '');
+            document.getElementById('fileInfo').innerHTML = `<div class="filename">${currentFilename}.${ext}</div><div style="color:#666;margin-top:3px;">${ext.toUpperCase()} 格式 | ${objects.length} 对象</div>`;
+        }
+
+        function loadFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                const ext = file.name.split('.').pop().toLowerCase();
+
+                if (ext !== 'zsd' && ext !== 'zsdx') {
+                    alert('不支持的文件格式！请使用 .zsd 或 .zsdx 文件。');
+                    return;
+                }
+
+                const data = decodeData(content);
+                if (!data || !data.objects) {
+                    alert('文件格式错误或已损坏！');
+                    return;
+                }
+
+                loadSceneData(data, file.name, ext);
+                saveToStorage(content, file.name);
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>
