@@ -3,7 +3,7 @@
 # [Home](../home)<br>
 # [Develop music](../music)<br>
 # [Music Player](../MusicPlayer)
-# [Developer's Bulletin](../BK)
+# [Developer's Bulletin](https://zztxtkintel.dpdns.org/BK)
 # [ZSD](../ZSD)
 # [FL Studio](https://cpv2.mairuan.com/flstudiochina.com/full/flstudio_win_25_cn.exe)<br>
 [FLP](NewStuff.flp)<br>
