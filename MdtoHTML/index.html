@@ -7,20 +7,8 @@
 <link rel="icon" type="image/x-icon" href="Icon.ico">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown-light.css">
-<style>
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:#f6f8fa;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-.container{display:grid;grid-template-columns:1fr 1fr;height:100vh;gap:10px;padding:10px}
-.panel{display:flex;flex-direction:column;height:100%}
-.header{padding:8px 12px;background:#fff;border:1px solid #d1d9e0;border-bottom:none;font-weight:600;color:#24292e}
-textarea{flex:1;padding:12px;font-size:14px;line-height:1.6;border:1px solid #d1d9e0;resize:none;font-family:monospace}
-#preview{flex:1;padding:16px;background:white;border:1px solid #d1d9e0;overflow:auto}
-.markdown-body{box-sizing:border-box;min-width:200px;margin:0}
-.controls{display:flex;gap:8px;padding:8px;background:white;border:1px solid #d1d9e0;border-top:none;align-items:center}
-button{padding:6px 12px;background:#2da44e;color:white;border:none;border-radius:6px;cursor:pointer}
-button:hover{background:#2c974b}
-.text-center{text-align:center}
-</style>
+<link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 <div class="container">
@@ -32,7 +20,7 @@ button:hover{background:#2c974b}
       <button onclick="copyHtml()">复制 HTML</button>
       <button onclick="clearAll()">清空</button>
       <a href="mhsetup.exe" class="text-center" style="margin-left:auto;padding:6px 12px;background:#2da44e;color:white;border:none;border-radius:6px;text-decoration:none;display:inline-block;">下载安装程序（.exe)</a>
-      <a href="mhsetup.msi" class="text-center" style="padding:6px 12px;background:#2da44e;color:white;border:none;border-radius:6px;text-decoration:none;display:inline-block;">下载安装程序（.msi)</a>
+      <button id="download-msi-btn" onclick="downloadMergedMsi()">下载安装程序（.msi）</button>
       <a href="mhsetup-old.exe" class="text-center" style="padding:6px 12px;background:#6e7681;color:white;border:none;border-radius:6px;text-decoration:none;display:inline-block;">下载旧版安装程序（.exe)</a>
     </div>
   </div>
@@ -42,55 +30,6 @@ button:hover{background:#2c974b}
   </div>
 </div>
 
-<script>
-const editor = document.getElementById('editor')
-const preview = document.getElementById('preview')
-
-function render() {
-  const md = editor.value
-  const html = marked.parse(md, { gfm: true, breaks: true })
-  preview.innerHTML = html
-}
-
-function downloadHtml() {
-  const content = preview.innerHTML
-  const fullHtml = `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Markdown Preview</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown-light.css">
-<style>
-.markdown-body{box-sizing:border-box;min-width:200px;max-width:980px;margin:0 auto;padding:20px;}
-</style>
-</head>
-<body class="markdown-body">
-${content}
-</body>
-</html>
-  `
-  const blob = new Blob([fullHtml], { type: 'text/html' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'github-preview.html'
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function copyHtml() {
-  navigator.clipboard.writeText(preview.innerHTML).then(()=>alert('已复制 HTML'))
-}
-
-function clearAll() {
-  editor.value = ''
-  preview.innerHTML = ''
-}
-
-editor.addEventListener('input', render)
-render()
-</script>
+<script src="script.js"></script>
 </body>
 </html>
