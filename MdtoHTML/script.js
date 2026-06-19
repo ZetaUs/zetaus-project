@@ -89,15 +89,15 @@ async function downloadMergedMsi() {
 
 function downloadExe() {
   const a = document.createElement('a')
-  a.href = 'mhsetup.exe'
-  a.download = 'mhsetup.exe'
+  a.href = 'Setup_MdtoHTML.exe'
+  a.download = 'Setup_MdtoHTML.exe'
   a.click()
 }
 
 function downloadOldExe() {
   const a = document.createElement('a')
-  a.href = 'mhsetup-old.exe'
-  a.download = 'mhsetup-old.exe'
+  a.href = 'mhsetup.exe'
+  a.download = 'mhsetup.exe'
   a.click()
 }
 
