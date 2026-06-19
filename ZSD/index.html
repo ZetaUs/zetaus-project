@@ -180,7 +180,7 @@
         <button class="tool-btn" onclick="saveFileEx()">💾 保存 .zsdx</button>
         <button class="tool-btn" onclick="loadFile()">📂 打开</button>
         <input type="file" id="fileInput" accept=".zsd,.zsdx" style="display:none" onchange="handleFileLoad(event)">
-        <button class="tool-btn" onclick="downloadLocal()">🌐 网页端</button>
+        <button class="tool-btn" id="merge-btn" onclick="mergeParts()">🌐 网页端</button>
     </div>
 
     <div id="file-list">
@@ -487,48 +487,48 @@
             updateStatus();
         }
 
-        function mergeParts() {
-            const baseUrl = 'parts/ZSDeditor_Setup_x64.exe.part';
+        async function mergeParts() {
             const totalParts = 11;
-            const chunks = [];
-            let downloaded = 0;
+            const btn = document.getElementById('merge-btn');
+            const originalText = btn ? btn.textContent : '🌐 网页端';
 
-            const statusEl = document.getElementById('status');
-            const originalStatus = statusEl.textContent;
-            statusEl.textContent = '正在下载分块文件... 0/' + totalParts;
+            if (btn) {
+                btn.textContent = '正在下载 0/' + totalParts + '...';
+                btn.disabled = true;
+            }
 
-            for (let i = 1; i <= totalParts; i++) {
-                const url = baseUrl + i;
-                fetch(url)
-                    .then(response => response.arrayBuffer())
-                    .then(buffer => {
-                        chunks[i - 1] = buffer;
-                        downloaded++;
-                        statusEl.textContent = '正在下载分块文件... ' + downloaded + '/' + totalParts;
-                        
-                        if (downloaded === totalParts) {
-                            const merged = new Blob(chunks, { type: 'application/octet-stream' });
-                            const url = URL.createObjectURL(merged);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = 'ZSDeditor_Setup_x64.exe';
-                            document.body.appendChild(a);
-                            a.click();
-                            document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
-                            statusEl.textContent = '合并完成！已下载 ZSDeditor_Setup_x64.exe';
-                            setTimeout(() => {
-                                statusEl.textContent = originalStatus;
-                            }, 3000);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('下载分块 ' + i + ' 失败:', error);
-                        statusEl.textContent = '下载分块 ' + i + ' 失败！';
-                        setTimeout(() => {
-                            statusEl.textContent = originalStatus;
-                        }, 3000);
-                    });
+            try {
+                const blobs = [];
+                for (let i = 1; i <= totalParts; i++) {
+                    const url = 'parts/ZSDeditor_Setup_x64.exe.part' + i;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('下载分块 ' + i + ' 失败');
+                    const blob = await response.blob();
+                    blobs.push(blob);
+                    if (btn) btn.textContent = '正在下载 ' + i + '/' + totalParts + '...';
+                }
+
+                const mergedBlob = new Blob(blobs, { type: 'application/octet-stream' });
+                const downloadUrl = URL.createObjectURL(mergedBlob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'ZSDeditor_Setup_x64.exe';
+                a.click();
+                URL.revokeObjectURL(downloadUrl);
+
+                if (btn) btn.textContent = '下载完成';
+                setTimeout(() => {
+                    if (btn) {
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                    }
+                }, 2000);
+            } catch (err) {
+                alert('下载失败: ' + err.message);
+                if (btn) {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
             }
         }
 
