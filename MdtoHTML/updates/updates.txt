@@ -1,1 +1,7 @@
-1.0.0
+[Update]
+Version=1.0.1
+DownloadURL=https://zztxorg.dpdns.org/MdtoHTML/updates/mhsetup.msi
+Size=12580000
+MD5=3be255035953b1b5f4c7b7115ed32ea0
+ReleaseDate=2026-06-28
+Changelog=修复安装|更新会提醒
